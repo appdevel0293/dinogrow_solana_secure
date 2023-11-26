@@ -1,15 +1,20 @@
 import 'package:dinogrow/Pages/Login.dart';
-import 'package:dinogrow/Pages/generateAccount.dart';
+import 'package:dinogrow/Pages/falling_boxes.dart';
 import 'package:dinogrow/Pages/homePage.dart';
 import 'package:dinogrow/Pages/recoverAccount.dart';
 import 'package:dinogrow/Pages/selectChain.dart';
 import 'package:dinogrow/Pages/setUpAccount.dart';
 import 'package:dinogrow/Pages/setUpPassword.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(const MyApp());
+  });
 }
 
 final GoRouter _router = GoRouter(routes: <GoRoute>[
@@ -31,7 +36,7 @@ final GoRouter _router = GoRouter(routes: <GoRoute>[
   GoRoute(
       path: '/generatePhrase',
       builder: (context, state) {
-        return const GenerateAccountScreen();
+        return const InputPhraseScreen();
       }),
   GoRoute(
       path: '/passwordSetup',
@@ -47,6 +52,11 @@ final GoRouter _router = GoRouter(routes: <GoRoute>[
       path: '/home',
       builder: (context, state) {
         return const MyHomePage();
+      }),
+  GoRoute(
+      path: '/random',
+      builder: (context, state) {
+        return const GameWidgetDown();
       }),
 ]);
 
