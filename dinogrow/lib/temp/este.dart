@@ -1,1 +1,0 @@
-import 'chuo.g.dart';

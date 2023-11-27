@@ -1,6 +1,7 @@
 import 'package:dinogrow/Models/connectDataClass.dart';
 import 'package:dinogrow/anchor_types/save_score_anchor.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:solana/anchor.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/encoder.dart';
@@ -12,15 +13,17 @@ import 'package:http/http.dart';
 
 Future<String> saveScore(ConnectData connectData, BigInt score) async {
   String result = "";
+  await dotenv.load(fileName: ".env");
   if (connectData.selectedChain == Chain.polygon) {
-    final contractAddress = web3.EthereumAddress.fromHex(
-        "0x5D2613c10D368C040c522D21Bfd1d40a8d6dCf05");
+    final address = dotenv.env['POLYGON_CONTRACT_ADDRESSS'].toString();
+
+    final contractAddress = web3.EthereumAddress.fromHex(address);
     result = await _saveScoreEvm(
         connectData.rpc!, contractAddress, score, connectData.credEvm!);
     return result;
   } else if (connectData.selectedChain == Chain.bsc) {
-    final contractAddress = web3.EthereumAddress.fromHex(
-        "0xC89171CE40f3d3413D2f464178D70bf5d188B306");
+    final address = dotenv.env['BSC_CONTRACT_ADDRESS'].toString();
+    final contractAddress = web3.EthereumAddress.fromHex(address);
     result = await _saveScoreEvm(
         connectData.rpc!, contractAddress, score, connectData.credEvm!);
     return result;
@@ -65,8 +68,9 @@ Future<String> _saveScoreSolana(
     rpcUrl: Uri.parse(rpc),
     websocketUrl: Uri.parse(wsUrl),
   );
-  final programIdPublicKey = Ed25519HDPublicKey.fromBase58(
-      "HUCtJywQPgh9nxJLLjGhSDoC9Vf93ru7aSSboNLRTd8m");
+  await dotenv.load(fileName: ".env");
+  final address = dotenv.env['SOLANA_PROGRAM_ADDRESS'].toString();
+  final programIdPublicKey = Ed25519HDPublicKey.fromBase58(address);
 
   final profilePda = await Ed25519HDPublicKey.findProgramAddress(
     seeds: [

@@ -56,7 +56,7 @@ final GoRouter _router = GoRouter(routes: <GoRoute>[
   GoRoute(
       path: '/random',
       builder: (context, state) {
-        return const GameWidgetDown();
+        return const GameWidgetFallingBoxes();
       }),
 ]);
 

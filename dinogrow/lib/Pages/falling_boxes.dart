@@ -214,14 +214,14 @@ class _Background extends PositionComponent {
   }
 }
 
-class GameWidgetDown extends StatefulWidget {
-  const GameWidgetDown({super.key});
+class GameWidgetFallingBoxes extends StatefulWidget {
+  const GameWidgetFallingBoxes({super.key});
 
   @override
-  State<GameWidgetDown> createState() => _GameWidgetDownState();
+  State<GameWidgetFallingBoxes> createState() => _GameWidgetDownState();
 }
 
-class _GameWidgetDownState extends State<GameWidgetDown> {
+class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
   FallingBoxes game = FallingBoxes((String data) {});
   bool loading = true;
   bool paused = false;
