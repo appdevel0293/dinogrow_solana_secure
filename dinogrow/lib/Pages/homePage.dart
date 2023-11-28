@@ -81,7 +81,25 @@ class _MyHomePageState extends State<MyHomePage> {
               'Play',
               style: TextStyle(fontSize: 17),
             ),
-          )
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          ElevatedButton(
+            onPressed: () {
+              GoRouter.of(context).go("/ranking");
+            },
+            style: ElevatedButton.styleFrom(
+                minimumSize: const Size(220, 50),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                  20,
+                ))),
+            child: const Text(
+              'Ranking',
+              style: TextStyle(fontSize: 17),
+            ),
+          ),
         ],
       ),
     );

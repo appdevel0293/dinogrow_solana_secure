@@ -1,6 +1,7 @@
 import 'package:dinogrow/Pages/Login.dart';
 import 'package:dinogrow/Pages/falling_boxes.dart';
 import 'package:dinogrow/Pages/homePage.dart';
+import 'package:dinogrow/Pages/ranking.dart';
 import 'package:dinogrow/Pages/recoverAccount.dart';
 import 'package:dinogrow/Pages/selectChain.dart';
 import 'package:dinogrow/Pages/setUpAccount.dart';
@@ -57,6 +58,11 @@ final GoRouter _router = GoRouter(routes: <GoRoute>[
       path: '/random',
       builder: (context, state) {
         return const GameWidgetFallingBoxes();
+      }),
+  GoRoute(
+      path: '/ranking',
+      builder: (context, state) {
+        return const RankingPage();
       }),
 ]);
 

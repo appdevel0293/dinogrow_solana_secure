@@ -2,12 +2,17 @@ import 'package:dinogrow/Flame/buttons.dart';
 import 'package:dinogrow/Flame/objects/box.dart';
 import 'package:dinogrow/Flame/objects/dino.dart';
 import 'package:dinogrow/Flame/objects/floor.dart';
+import 'package:dinogrow/Models/displayDataClass.dart';
+import 'package:dinogrow/services/connect_data.dart';
+import 'package:dinogrow/services/get_display_data.dart';
+import 'package:dinogrow/services/save_score.dart';
 import 'package:flame/palette.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flame/timer.dart' as timer_flame;
@@ -340,14 +345,57 @@ class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
             child: const Text('Try again'),
           ),
           TextButton(
-            onPressed: () {
-              //Implement SaveScore here
-              GoRouter.of(context).go('/home');
+            onPressed: () async {
+              var connectData = await getconnectdata();
+              var displayData = await getDisplayData(connectData);
+              final result =
+                  await saveScore(connectData, BigInt.from(int.parse(score)));
+
+              display_result(result, displayData);
             },
             child: const Text("Send my score"),
           ),
         ],
       ),
+    );
+  }
+
+  void display_result(String result, DisplayData displayData) {
+    String truncResult = truncateString(result);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Column(
+            children: [
+              CircleAvatar(
+                backgroundColor: Colors.transparent,
+                child: displayData.chainLogo,
+              ),
+              Text("Transaction Completed with result"),
+            ],
+          ),
+          content: Row(
+            children: [
+              Text(" $truncResult"),
+              IconButton(
+                icon: Icon(Icons.copy),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: result));
+                },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text("Close"),
+              onPressed: () {
+                GoRouter.of(context).go("/home");
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
