@@ -15,7 +15,7 @@ Future<String> saveScore(ConnectData connectData, BigInt score) async {
   String result = "";
   await dotenv.load(fileName: ".env");
   if (connectData.selectedChain == Chain.polygon) {
-    final address = dotenv.env['POLYGON_CONTRACT_ADDRESSS'].toString();
+    final address = dotenv.env['POLYGON_CONTRACT_ADDRESS'].toString();
 
     final contractAddress = web3.EthereumAddress.fromHex(address);
     result = await _saveScoreEvm(
