@@ -372,7 +372,9 @@ class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
                 backgroundColor: Colors.transparent,
                 child: displayData.chainLogo,
               ),
-              Text("Transaction Completed with result"),
+              Text(result.startsWith("0x")
+                  ? "Transaction Completed with result: "
+                  : "Transaction Failed: "),
             ],
           ),
           content: Row(
