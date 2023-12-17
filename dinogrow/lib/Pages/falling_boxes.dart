@@ -360,8 +360,8 @@ class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
     );
   }
 
-  void display_result(String result, DisplayData displayData) {
-    String truncResult = truncateString(result);
+  void display_result(dynamic result, DisplayData displayData) {
+    String truncResult = truncateString(result["result"]);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -372,7 +372,7 @@ class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
                 backgroundColor: Colors.transparent,
                 child: displayData.chainLogo,
               ),
-              Text(result.startsWith("0x")
+              Text(!result["error"]
                   ? "Transaction Completed with result: "
                   : "Transaction Failed: "),
             ],
@@ -383,7 +383,7 @@ class _GameWidgetDownState extends State<GameWidgetFallingBoxes> {
               IconButton(
                 icon: Icon(Icons.copy),
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: result));
+                  Clipboard.setData(ClipboardData(text: result["result"]));
                 },
               ),
             ],

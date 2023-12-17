@@ -3,6 +3,7 @@ import 'package:dinogrow/anchor_types/save_score_anchor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:solana/anchor.dart';
+import 'package:solana/base58.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
@@ -12,21 +13,19 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart' as web3;
 import 'package:http/http.dart';
 
-Future<String> saveScore(ConnectData connectData, BigInt score) async {
-  String result = "";
+Future<dynamic> saveScore(ConnectData connectData, BigInt score) async {
+  dynamic result;
   await dotenv.load(fileName: ".env");
   if (connectData.selectedChain == Chain.polygon) {
     final address = dotenv.env['POLYGON_CONTRACT_ADDRESS'].toString();
     final seed = dotenv.env['EVM_KEY'].toString();
     Uint8List seedBytes = hexToBytes(seed);
-    Uint8List badseedBytes = hexToBytes(
-        "0xf7e20a3ec99eb7c2ca8631a2fb843767dd35b72fdb18826baaccf56552375972");
     print(seedBytes);
-    result = await _saveScoreEvm(connectData, address, score, badseedBytes);
+    result = await _saveScoreEvm(connectData, address, score, seedBytes);
     return result;
   } else if (connectData.selectedChain == Chain.bsc) {
     final address = dotenv.env['BSC_CONTRACT_ADDRESS'].toString();
-    final seed = dotenv.env['EVM_SEED'].toString();
+    final seed = dotenv.env['EVM_KEY'].toString();
     Uint8List seedBytes = hexToBytes(seed);
 
     result = await _saveScoreEvm(connectData, address, score, seedBytes);
@@ -39,7 +38,7 @@ Future<String> saveScore(ConnectData connectData, BigInt score) async {
   return result;
 }
 
-Future<String> _saveScoreEvm(ConnectData connectData, String address,
+Future<dynamic> _saveScoreEvm(ConnectData connectData, String address,
     BigInt score, Uint8List key) async {
   final contractAddress = web3.EthereumAddress.fromHex(address);
   final abi = await rootBundle.loadString('assets/abi.json');
@@ -65,15 +64,16 @@ Future<String> _saveScoreEvm(ConnectData connectData, String address,
       ),
       chainId: chainId.toInt(),
     );
-    return result;
+    final res = {"result": result, "error": false};
+    return res;
   } catch (e) {
     final result = e.toString();
-    print(result);
-    return result;
+    final res = {"result": result, "error": true};
+    return res;
   }
 }
 
-Future<String> _saveScoreSolana(
+Future<dynamic> _saveScoreSolana(
     ConnectData connectData, BigInt score, String address) async {
   final systemProgramId =
       Ed25519HDPublicKey.fromBase58(SystemProgram.programId);
@@ -83,6 +83,23 @@ Future<String> _saveScoreSolana(
     websocketUrl: Uri.parse(wsUrl),
   );
   final programIdPublicKey = Ed25519HDPublicKey.fromBase58(address);
+  String solanaKeyStr = dotenv.env['SOLANA_SK'].toString();
+  solanaKeyStr = solanaKeyStr.replaceAll(RegExp(r'\[|\]'), '');
+  List<String> valueStrings = solanaKeyStr.split(',');
+  List<int> integerList =
+      (valueStrings).map((value) => int.parse(value)).toList();
+  integerList = integerList.sublist(0, 32);
+  Uint8List solanaSk = Uint8List.fromList(integerList);
+
+  final pair = await Ed25519HDKeyPair.random();
+
+  final privateKey =
+      await pair.extract().then((value) => value.bytes).then(base58encode);
+
+  final securityKey =
+      await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: solanaSk);
+
+  print(securityKey.address);
 
   final profilePda = await Ed25519HDPublicKey.findProgramAddress(
     seeds: [
@@ -115,16 +132,22 @@ Future<String> _saveScoreSolana(
       AccountMeta.writeable(
           pubKey: connectData.credSolana!.publicKey, isSigner: true),
       AccountMeta.readonly(pubKey: systemProgramId, isSigner: false),
+      AccountMeta.writeable(pubKey: securityKey.publicKey, isSigner: true),
     ],
     namespace: 'global',
   );
 
-  final message = Message(instructions: [instruction]);
-  final signature = await client.sendAndConfirmTransaction(
-    message: message,
-    signers: [connectData.credSolana!],
-    commitment: Commitment.confirmed,
-  );
-
-  return signature;
+  try {
+    final message = Message(instructions: [instruction]);
+    final signature = await client.sendAndConfirmTransaction(
+      message: message,
+      signers: [connectData.credSolana!, securityKey],
+      commitment: Commitment.confirmed,
+    );
+    final res = {"result": signature, "error": false};
+    return res;
+  } catch (e) {
+    final res = {"result": e.toString(), "error": true};
+    return res;
+  }
 }
